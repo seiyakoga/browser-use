@@ -29,6 +29,7 @@ dist/
 *.jsonl
 *.log
 *.bak
+!tennis_reserve_prompt.txt
 
 # Secrets and sensitive files
 secrets.env

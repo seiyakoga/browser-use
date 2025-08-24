@@ -1,0 +1,41 @@
+# @file purpose: Defines a GitHub Actions workflow to schedule browser-use.
+# This file sets up a cron job to run the browser-use application at specified times.
+# It integrates into the browser-use system by providing automated execution capabilities.
+
+name: Scheduled Browser Use
+
+on:
+  schedule:
+    # 毎週月曜日と金曜日の朝8:30 JST (UTC 23:30)
+    - cron: "30 23 * * SUN,THU" # Sunday 23:30 UTC for Monday 8:30 JST, Thursday 23:30 UTC for Friday 8:30 JST
+
+jobs:
+  run_browser_use:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11" # .python-version ファイルに 3.11 が指定されているため
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Playwright browsers
+        run: uvx playwright install chromium --with-deps --no-shell
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run browser-use with a specific task
+        run: |
+          PROMPT_CONTENT=$(cat tennis_reserve_prompt.txt)
+          python -m browser_use.cli --prompt "$PROMPT_CONTENT" --model gemini-2.5-pro
+        env:
+          # Google APIキーなど、browser-useの実行に必要な環境変数を設定してください。
+          # GitHub ActionsのSecretsに保存することを推奨します。
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
